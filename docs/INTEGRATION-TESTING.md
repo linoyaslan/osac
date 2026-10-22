@@ -362,6 +362,18 @@ the certificate. The Kind
 `SUITE=fulfillment` target exercises deployed startup and API behavior, subject
 to the profile's configured CA and enabled services.
 
+The `make helm-networking-test` Helm contract includes GATE-CONFIG-01,
+owned by [DEV] OSAC-5993. It checks each networking consumer Deployment's
+startup environment separately (Fulfillment API/controller, OSAC Operator,
+BMF), default/true/false values, standalone charts, invalid types, removed-key
+migration diagnostics, BMaaS-disabled rendering, and unchanged service/controller
+enablement. These are rendered manifests, without Kubernetes or provider calls.
+The existing Kind `SUITE=fulfillment`, `SUITE=operator`, and `SUITE=bmf`
+targets exercise deployed startup and Kubernetes wiring with current images;
+provider operations remain outside their coverage. Complete runtime disabled
+behavior remains separate work in the networking epic; configuration evidence
+for this task is tracked under [OSAC-5993](https://redhat.atlassian.net/browse/OSAC-5993).
+
 ### OSAC-5343 deployed enablement coverage
 
 The release E2E path adds these assertions to existing user journeys. The

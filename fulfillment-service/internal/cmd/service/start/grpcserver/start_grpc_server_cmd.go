@@ -50,6 +50,7 @@ import (
 	"github.com/osac-project/osac/fulfillment-service/internal/logging"
 	"github.com/osac-project/osac/fulfillment-service/internal/metrics"
 	"github.com/osac-project/osac/fulfillment-service/internal/network"
+	"github.com/osac-project/osac/fulfillment-service/internal/networking"
 	"github.com/osac-project/osac/fulfillment-service/internal/provisioners"
 	"github.com/osac-project/osac/fulfillment-service/internal/recovery"
 	"github.com/osac-project/osac/fulfillment-service/internal/servers"
@@ -204,9 +205,10 @@ func Cmd() *cobra.Command {
 
 // runnerContext contains the data and logic needed to run the `start grpc-server` command.
 type runnerContext struct {
-	logger *slog.Logger
-	flags  *pflag.FlagSet
-	args   struct {
+	networkingConfig networking.Config
+	logger           *slog.Logger
+	flags            *pflag.FlagSet
+	args             struct {
 		caFiles                  []string
 		kafkaTopicPrefix         string
 		authType                 string
@@ -236,6 +238,7 @@ func (c *runnerContext) run(cmd *cobra.Command, argv []string) error { //nolint:
 
 	// Get the dependencies from the context:
 	c.logger = logging.LoggerFromContext(ctx)
+	c.networkingConfig = networking.LoadConfig(c.logger)
 	c.logger.InfoContext(ctx, "Service enablement",
 		slog.Any("enabled", c.args.services.EnabledServices()),
 	)

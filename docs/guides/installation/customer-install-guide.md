@@ -553,7 +553,7 @@ subchart's own `values.yaml` file.
 | `operator.fulfillment.serverAddress` | schema | Fulfillment gRPC endpoint used by the Operator. |
 | `operator.fulfillment.credentials.secretName`, `clientIdKey`, `clientSecretKey` | schema | Name and keys of the Kubernetes Secret holding the `osac-controller` Keycloak service-account credentials. `osac-infra` provisions it for bundled Keycloak; external Keycloak deployments must provide an equivalent Secret. The OSAC chart only references it. |
 | `operator.controllers.tenant`, `operator.controllers.networking`, `operator.controllers.storage` | schema | Enable or disable individual reconcilers. Which services run is driven by `global.services.*`. |
-| `operator.controllers.networkingProvisioning` | schema | When `false`, networking custom resources reconcile to `READY` without a real fabric. |
+| `global.networking.provisioningEnabled` | schema | Shared boolean (default `true`) read at startup by Fulfillment API/controller, OSAC Operator, and BMF. Complete disabled-mode behavior requires the remaining runtime tasks. |
 | `operator.controllers.volume` | subchart | Enables the Volume reconciler. |
 | `operator.configSecret.name`, `operator.configSecret.optional` | schema | Additional Operator configuration Secret. |
 | `operator.hubAccess.enabled` | schema | Creates the hub-access `ClusterRole` that the Fulfillment Service binds to. |
@@ -619,7 +619,7 @@ subchart's own `values.yaml` file.
 | `ui.images.ui` | schema | Web console image. | Release tag |
 | `bmf.metal3.enabled`, `bmf.metal3.namespace`, `bmf.metal3.hostClass` | schema | Use the Metal3 backend. Set `namespace` to where your `BareMetalHost` resources live. Requires BareMetalOperator and a `Provisioning` custom resource with `spec.watchAllNamespaces: true`. | `false` |
 | `bmf.env.aapInsecureSkipVerify` | schema | Skip TLS verification for AAP API calls. | `"true"` |
-| `bmf.env.aapUrl`, `bmf.env.enableNetworkingProvisioning` | subchart | AAP controller URL that the Bare Metal Fulfillment Operator drives, and its networking-provisioning toggle. | Not applicable |
+| `bmf.env.aapUrl` | subchart | AAP controller URL that the Bare Metal Fulfillment Operator drives. | Not applicable |
 | `bmf.bcm.enabled`, `bmf.bcm.url`, `bmf.bcm.cert`, `bmf.bcm.key`, `bmf.bcm.caCert`, `bmf.bcm.insecureSkipVerify`, `bmf.bcm.hostClass`, `bmf.bcm.bmhNamespace` | subchart | Base Command Manager (BCM) backend. | `false` |
 | `bmf.secrets.inventoryConfig`, `bmf.secrets.managementConfig`, `bmf.secrets.osClouds`, `bmf.configMaps.profiles` | schema | Names of the inventory, management, and `clouds.yaml` Secrets and the profiles `ConfigMap`. | Default names |
 | `operatorCrds.install` | schema | Install the OSAC CRDs. Set it to `false` if a cluster administrator manages them. | `true` |
@@ -847,9 +847,8 @@ backend. For the full variable reference, see
    ```yaml
    global:
      services: { bmaas: { enabled: true }, vmaas: { enabled: false }, caas: { enabled: false }, maas: { enabled: false } }
-   operator:
-     controllers:
-       networkingProvisioning: false
+     networking:
+       provisioningEnabled: false
    bmf:
      metal3:
        enabled: true
@@ -858,7 +857,6 @@ backend. For the full variable reference, see
      env:
        aapUrl: "http://osac-aap/api/controller"
        aapInsecureSkipVerify: "true"
-       enableNetworkingProvisioning: "false"
    aap:
      instanceGroups:
        publishTemplates:
@@ -1730,7 +1728,7 @@ with the correct `global.clusterDomain`.
   `osac.openshift.io/storage-tier` labels and the `status.storageClasses` field
   of the `Tenant`, and align the requested tier with a labeled storage class.
 - Networking custom resources stuck in `PROGRESSING` on a cluster with no real
-  fabric: set `operator.controllers.networkingProvisioning` to `false`.
+  fabric: set `global.networking.provisioningEnabled` to `false`.
 - **CaaS:** watch the AAP `cluster-fulfillment` job for the failing task. Netris
   or Route 53 credential errors, and `NETRIS_RESOURCE_CLASS_MAP` errors, appear
   there.
