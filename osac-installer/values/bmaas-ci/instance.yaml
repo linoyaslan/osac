@@ -15,6 +15,7 @@ global:
     maas:
       enabled: false
   networking:
+    provisioningEnabled: false
     fabricManager: netris
     k8sManager: ""
     netris:
@@ -52,7 +53,6 @@ operator:
   controllers:
     tenant: true
     networking: true
-    networkingProvisioning: false
     storage: true
   hubAccess:
     enabled: true
@@ -203,7 +203,6 @@ bmf:
   env:
     aapUrl: "http://osac-aap/api/controller"
     aapInsecureSkipVerify: "true"
-    enableNetworkingProvisioning: "false"
   metal3:
     enabled: true
     namespace: host-inventory

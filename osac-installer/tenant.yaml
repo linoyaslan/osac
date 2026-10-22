@@ -1,0 +1,6 @@
+"@type": type.googleapis.com/osac.private.v1.Tenant 
+metadata: 
+  name: demo
+spec: 
+  domains: 
+    - demo.example.com

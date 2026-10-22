@@ -169,7 +169,7 @@ fi
 # subnet-target namespace (osac.openshift.io/subnet-target-namespace annotation),
 # NOT in the tenant namespace. In a real environment that namespace is created by
 # subnet provisioning (the cudn_net role, which also builds the OVN CUDN). On kind
-# networkingProvisioning=false makes subnets reconcile to Ready without any AAP
+# global.networking.provisioningEnabled=false makes subnets reconcile to Ready without any AAP
 # dispatch, so nothing creates the namespace and the VM would have nowhere to live
 # (the CI would hang at Provisioned=False/WaitingForVM). kind VMs use the default
 # pod network + cluster-wide l2bridge binding — no per-namespace CUDN/NAD — so a

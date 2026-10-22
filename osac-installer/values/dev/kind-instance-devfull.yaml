@@ -1,10 +1,14 @@
+global:
+  networking:
+    provisioningEnabled: false
+
 # Kind dev-full overlay -- layered on top of kind-instance.yaml (PROFILE=dev-full).
 #
 # The plain `dev` (integration-test) profile uses kind-instance.yaml as-is and
 # never onboards a real tenant network, so it leaves networking provisioning at
 # its chart default. dev-full seeds a VirtualNetwork/Subnet/SecurityGroup and
 # waits for them to reach READY, but Kind has no CUDN/OVN fabric for the AAP
-# playbooks to act on. Disabling networkingProvisioning makes the networking
+# playbooks to act on. Setting global.networking.provisioningEnabled=false makes the networking
 # controllers reconcile those resources to READY immediately (no AAP dispatch),
 # which is exactly the local-dev "noop networking" behavior. The networking
 # controller itself stays enabled (kind-instance.yaml: operator.controllers.networking=true)
@@ -13,7 +17,6 @@ operator:
   image:
     pullPolicy: IfNotPresent
   controllers:
-    networkingProvisioning: false
     storage: true
     volume: true
 

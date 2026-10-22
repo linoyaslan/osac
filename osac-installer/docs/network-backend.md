@@ -347,3 +347,46 @@ aap:
 Only non-empty values are rendered into the ConfigMap. Keep secrets in a
 gitignored `.local.yaml` file or pass them with
 `--set-string aap.instanceGroups.clusterFulfillment.secret.NETRIS_PASSWORD=...`.
+
+## Shared provider-networking provisioning setting
+
+`global.networking.provisioningEnabled` is a boolean, defaulting to `true` in
+both the umbrella and standalone Fulfillment, OSAC Operator, and BMF charts.
+Helm passes the same value as `OSAC_ENABLE_NETWORKING_PROVISIONING` to the
+Fulfillment API server, Fulfillment controller, OSAC Operator, and BMF. Each
+process reads it once and logs `networking provisioning feature gate` with its
+`enabled` value. Direct process startup also defaults to `true`; missing,
+empty, or invalid input uses that default, and invalid input logs a diagnostic.
+Changes require a restart.
+
+```yaml
+global:
+  networking:
+    provisioningEnabled: false
+```
+
+This flag is independent of `global.services.*.enabled`,
+`operator.controllers.networking`, and other controller toggles. Manager
+selection, API authorization, validation, and defaulting keep their existing
+behavior. OSAC-5993 establishes consistent configuration; the remaining
+runtime tasks implement the complete disabled-mode guarantee.
+
+For upgrades, remove `operator.controllers.networkingProvisioning` and
+`bmf.env.enableNetworkingProvisioning` (standalone: `controllers.networkingProvisioning`
+and `env.enableNetworkingProvisioning`). Helm rejects these keys with migration
+guidance, even if the affected service is disabled. **BMF's default changes from
+`false` to `true`.** Installations that previously mixed enabled OSAC Operator
+networking and disabled BMF networking must choose one combined state. The
+CaaS CI profile chooses shared `false`; the networking lab profile chooses
+shared `true`. Production keeps the shared default `true`.
+
+Complete the rollout of `fulfillment-grpc-server`, `fulfillment-controller`,
+`osac-operator`, and the deployed BMF Deployment, using an explicit namespace.
+Verify every process's startup log reports the chosen value before considering
+the configuration aligned. The complete disabled guarantee also requires the
+remaining runtime tasks and terminal in-flight networking jobs; disabling the
+setting does not withdraw existing provider routes.
+
+The Enclave plugin consumes the schema boolean through the existing Wizard
+pipeline. Plugin schema uptake and UI rendering/validation must be verified
+before declaring the Wizard control available.

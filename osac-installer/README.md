@@ -304,8 +304,11 @@ the `osac` and `osac-devstack` releases plus `scripts/dev-full/`:
   its default VirtualNetwork + Subnet + SecurityGroup via tenant onboarding, so those are
   ready without manual seeding.
 
-The `dev-full` overlay also sets `operator.controllers.networkingProvisioning=false`
-so networking resources reconcile to READY without a real fabric (kind has none).
+The `dev-full` overlay also sets `global.networking.provisioningEnabled=false`
+so the operator can mark logical networking resources READY without a real fabric
+(kind has none). All consumers receive this value; the complete disabled-mode
+guarantee still depends on the remaining runtime tasks. See the
+[shared configuration and upgrade guide](docs/network-backend.md#shared-provider-networking-provisioning-setting).
 
 **Prerequisites** (beyond the base tools) — enforced by `scripts/dev-full/kind-runtime.sh check`:
 
