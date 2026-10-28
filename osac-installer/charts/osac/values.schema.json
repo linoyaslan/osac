@@ -355,7 +355,8 @@
           "properties": {
             "serverAddress": {
               "type": "string",
-              "description": "Fulfillment service gRPC address; leave empty to disable the operator Fulfillment client",
+              "description": "Required Fulfillment service gRPC address for the operator installation check",
+              "minLength": 1,
               "default": "fulfillment-internal-api:8001"
             },
             "credentials": {
@@ -2728,7 +2729,7 @@
         "provisioningEnabled": {
           "type": "boolean",
           "default": true,
-          "description": "Shared provider-networking provisioning setting read at startup by Fulfillment API/controller, OSAC Operator, and BMF. Independent of service and controller enablement. Complete disabled-mode behavior requires the remaining networking runtime tasks."
+          "description": "Installation-time provider-networking choice (default true). Choose false before first startup when no provider fabric exists. Fulfillment saves the first effective value; changing it requires reinstalling with a fresh Fulfillment database. Complete disabled-mode behavior requires the remaining networking runtime tasks."
         },
         "fabricManager": {
           "type": "string",

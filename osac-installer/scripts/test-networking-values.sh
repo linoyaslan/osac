@@ -167,6 +167,15 @@ for consumer in selected:
     env = [e for e in containers[0].get("env", [])
            if e["name"] == "OSAC_ENABLE_NETWORKING_PROVISIONING"]
     assert len(env) == 1 and env[0].get("value") == expected, consumer
+    if consumer == "bmf":
+        names = {e["name"] for e in containers[0].get("env", [])}
+        assert {"OSAC_INSTALLATION_API_URL", "OSAC_INSTALLATION_API_ISSUER_URL",
+                "OSAC_INSTALLATION_API_CLIENT_ID_FILE",
+                "OSAC_INSTALLATION_API_CLIENT_SECRET_FILE"} <= names
+        volumes = {v["name"] for v in matches[0]["spec"]["template"]["spec"]["volumes"]}
+        assert "secret-api-client-credentials" in volumes
+        mounts = {v["name"] for v in containers[0].get("volumeMounts", [])}
+        assert "secret-api-client-credentials" in mounts
 PYTHON
 }
 

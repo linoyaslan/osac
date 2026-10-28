@@ -34,7 +34,7 @@ func LoadConfig(logger *slog.Logger) Config {
 		enabled, err := strconv.ParseBool(value)
 		if err != nil {
 			logger.Error("conversion failed, using default", "envVar", ProvisioningEnabledEnv,
-				"value", value, "default", true, "error", err)
+				"default", true)
 		} else {
 			config.ProvisioningEnabled = enabled
 		}

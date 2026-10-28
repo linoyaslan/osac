@@ -45,7 +45,7 @@ ignition:
   trustIngressCA: false
 
 fulfillment:
-  serverAddress: ""
+  serverAddress: "fulfillment-internal-api:8001"
   credentials:
     secretName: fulfillment-controller-credentials
     clientIdKey: client-id

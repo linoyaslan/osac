@@ -550,10 +550,10 @@ subchart's own `values.yaml` file.
 | `operator.image.repository`, `operator.image.tag`, `operator.image.pullPolicy` | schema | Operator image. Use a release tag for production. |
 | `operator.replicaCount`, `operator.resources.*` | schema | Operator sizing. |
 | `operator.aap.url`, `operator.aap.token`, `operator.aap.insecureSkipVerify`, `operator.aap.statusPollInterval`, `operator.aap.templatePrefix` | schema | How the Operator reaches AAP. Set `insecureSkipVerify: "true"` for self-signed AAP routes. |
-| `operator.fulfillment.serverAddress` | schema | Fulfillment gRPC endpoint used by the Operator. |
+| `operator.fulfillment.serverAddress` | schema | Required Fulfillment gRPC endpoint used by the Operator to verify the saved installation setting before it reconciles. Standalone installs must configure a reachable endpoint and credentials. |
 | `operator.fulfillment.credentials.secretName`, `clientIdKey`, `clientSecretKey` | schema | Name and keys of the Kubernetes Secret holding the `osac-controller` Keycloak service-account credentials. `osac-infra` provisions it for bundled Keycloak; external Keycloak deployments must provide an equivalent Secret. The OSAC chart only references it. |
 | `operator.controllers.tenant`, `operator.controllers.networking`, `operator.controllers.storage` | schema | Enable or disable individual reconcilers. Which services run is driven by `global.services.*`. |
-| `global.networking.provisioningEnabled` | schema | Shared boolean (default `true`) read at startup by Fulfillment API/controller, OSAC Operator, and BMF. Complete disabled-mode behavior requires the remaining runtime tasks. |
+| `global.networking.provisioningEnabled` | schema | Installation-time boolean (default `true`). Set `false` before first startup on installations without a provider fabric. Fulfillment saves the effective value; all four consumers require it to match on later starts. Changing it requires reinstalling with a fresh Fulfillment database. Complete disabled-mode behavior requires the remaining runtime tasks. |
 | `operator.controllers.volume` | subchart | Enables the Volume reconciler. |
 | `operator.configSecret.name`, `operator.configSecret.optional` | schema | Additional Operator configuration Secret. |
 | `operator.hubAccess.enabled` | schema | Creates the hub-access `ClusterRole` that the Fulfillment Service binds to. |
@@ -620,6 +620,7 @@ subchart's own `values.yaml` file.
 | `bmf.metal3.enabled`, `bmf.metal3.namespace`, `bmf.metal3.hostClass` | schema | Use the Metal3 backend. Set `namespace` to where your `BareMetalHost` resources live. Requires BareMetalOperator and a `Provisioning` custom resource with `spec.watchAllNamespaces: true`. | `false` |
 | `bmf.env.aapInsecureSkipVerify` | schema | Skip TLS verification for AAP API calls. | `"true"` |
 | `bmf.env.aapUrl` | subchart | AAP controller URL that the Bare Metal Fulfillment Operator drives. | Not applicable |
+| `bmf.secretAPI.url`, `bmf.secretAPI.issuerUrl` | schema | Fulfillment private API and Keycloak issuer used by BMF to verify the saved installation setting, including when NetBox is off. If Keycloak is external, create the `fulfillment-controller-credentials` Secret with `client-id` and `client-secret` keys in the OSAC namespace before starting BMF. | Fulfillment internal API and route-based issuer |
 | `bmf.bcm.enabled`, `bmf.bcm.url`, `bmf.bcm.cert`, `bmf.bcm.key`, `bmf.bcm.caCert`, `bmf.bcm.insecureSkipVerify`, `bmf.bcm.hostClass`, `bmf.bcm.bmhNamespace` | subchart | Base Command Manager (BCM) backend. | `false` |
 | `bmf.secrets.inventoryConfig`, `bmf.secrets.managementConfig`, `bmf.secrets.osClouds`, `bmf.configMaps.profiles` | schema | Names of the inventory, management, and `clouds.yaml` Secrets and the profiles `ConfigMap`. | Default names |
 | `operatorCrds.install` | schema | Install the OSAC CRDs. Set it to `false` if a cluster administrator manages them. | `true` |
@@ -1728,7 +1729,10 @@ with the correct `global.clusterDomain`.
   `osac.openshift.io/storage-tier` labels and the `status.storageClasses` field
   of the `Tenant`, and align the requested tier with a labeled storage class.
 - Networking custom resources stuck in `PROGRESSING` on a cluster with no real
-  fabric: set `global.networking.provisioningEnabled` to `false`.
+  fabric: check whether `global.networking.provisioningEnabled` was set to
+  `false` before installation. An installed `true` value cannot be switched to
+  `false` by a Helm upgrade; reinstall with a fresh Fulfillment database to
+  choose that mode.
 - **CaaS:** watch the AAP `cluster-fulfillment` job for the failing task. Netris
   or Route 53 credential errors, and `NETRIS_RESOURCE_CLASS_MAP` errors, appear
   there.

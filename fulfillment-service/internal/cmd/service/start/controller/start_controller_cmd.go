@@ -337,6 +337,11 @@ func (r *runnerContext) run(cmd *cobra.Command, argv []string) error { //nolint:
 	if err != nil {
 		return fmt.Errorf("failed to create gRPC client: %w", err)
 	}
+	if err := networking.CheckRemoteInstallationProvisioning(
+		ctx, privatev1.NewInstallationSettingsClient(r.client), r.networkingConfig.ProvisioningEnabled,
+	); err != nil {
+		return err
+	}
 
 	// Create the gRPC server:
 	r.logger.InfoContext(ctx, "Creating gRPC listener")

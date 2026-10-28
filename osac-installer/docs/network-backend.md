@@ -357,7 +357,10 @@ Fulfillment API server, Fulfillment controller, OSAC Operator, and BMF. Each
 process reads it once and logs `networking provisioning feature gate` with its
 `enabled` value. Direct process startup also defaults to `true`; missing,
 empty, or invalid input uses that default, and invalid input logs a diagnostic.
-Changes require a restart.
+Choose `false` before the first Fulfillment startup if the installation has no
+provider fabric. Fulfillment saves the effective value in PostgreSQL after
+database migrations. An existing installation without a saved value records
+its effective value on the first startup after this upgrade.
 
 ```yaml
 global:
@@ -371,17 +374,33 @@ selection, API authorization, validation, and defaulting keep their existing
 behavior. OSAC-5993 establishes consistent configuration; the remaining
 runtime tasks implement the complete disabled-mode guarantee.
 
+The saved value is an installation choice. The Fulfillment API rejects a later
+startup with the opposite value, reporting
+`global.networking.provisioningEnabled cannot change after installation; reinstall to change it`.
+The Fulfillment controller, OSAC Operator, and BMF read the saved value through
+Fulfillment's authenticated private API before they reconcile. They fail to
+start if the value differs or cannot be read. To change the mode, reinstall
+OSAC with a fresh Fulfillment database. Preserve the same effective value when
+upgrading or rolling out replacement pods.
+BMF mounts the Fulfillment client credentials and CA bundle for this check even
+when NetBox is disabled. Standalone BMF installations must configure
+`secretAPI.url`, `secretAPI.issuerUrl`, and the referenced credential Secret.
+
 For upgrades, remove `operator.controllers.networkingProvisioning` and
 `bmf.env.enableNetworkingProvisioning` (standalone: `controllers.networkingProvisioning`
 and `env.enableNetworkingProvisioning`). Helm rejects these keys with migration
-guidance, even if the affected service is disabled. **BMF's default changes from
-`false` to `true`.** Installations that previously mixed enabled OSAC Operator
-networking and disabled BMF networking must choose one combined state. The
+guidance, even if the affected service is disabled. Renaming a legacy key while
+preserving the effective mode is an upgrade; changing the effective mode
+requires a reinstall. **BMF's default changes from `false` to `true`.**
+Installations that previously mixed enabled OSAC Operator networking and
+disabled BMF networking must choose one combined state before this setting is
+first recorded. The
 CaaS CI profile chooses shared `false`; the networking lab profile chooses
 shared `true`. Production keeps the shared default `true`.
 
-Complete the rollout of `fulfillment-grpc-server`, `fulfillment-controller`,
-`osac-operator`, and the deployed BMF Deployment, using an explicit namespace.
+Complete the rollout of `fulfillment-grpc-server` first, then
+`fulfillment-controller`, `osac-operator`, and the deployed BMF Deployment,
+using an explicit namespace.
 Verify every process's startup log reports the chosen value before considering
 the configuration aligned. The complete disabled guarantee also requires the
 remaining runtime tasks and terminal in-flight networking jobs; disabling the

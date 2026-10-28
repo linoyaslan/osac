@@ -48,6 +48,9 @@ func TestLoadConfig(t *testing.T) {
 			if strings.Contains(logs.String(), "conversion failed") != tc.diagnostic {
 				t.Fatal("incorrect invalid-input diagnostic")
 			}
+			if tc.diagnostic && strings.Contains(logs.String(), tc.value) {
+				t.Fatal("invalid environment value appeared in logs")
+			}
 			if !strings.Contains(logs.String(), "enabled="+strconv.FormatBool(tc.want)) {
 				t.Fatal("missing startup value log")
 			}

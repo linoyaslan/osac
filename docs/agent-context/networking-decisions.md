@@ -180,3 +180,9 @@ manager selection, logical readiness and default onboarding runtime changes
 remain separate epic work. Do not infer complete disabled-mode support from a
 successful render or matching startup values. See the
 [rollout and migration guide](../../osac-installer/docs/network-backend.md#shared-provider-networking-provisioning-setting).
+
+The installation lock extends the OSAC-5993 configuration boundary and
+supersedes the accepted unified design's upgrade-time mode switch. Fulfillment
+records the effective mode at first startup; all controllers verify it before
+reconciling. A legacy key rename that keeps the effective mode is permitted,
+while changing modes requires a fresh installation and Fulfillment database.
